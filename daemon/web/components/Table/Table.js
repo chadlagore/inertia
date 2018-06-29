@@ -19,7 +19,7 @@ export const TableRow = ({ style, children }) => (
 );
 TableRow.propTypes = {
   style: PropTypes.object,
-  children: PropTypes.arrayOf(TableCell),
+  children: PropTypes.any,
 };
 
 export class TableRowExpandable extends React.Component {

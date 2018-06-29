@@ -99,41 +99,6 @@ const sidebarTextStyles = {
   },
 };
 
-const SidebarHeader = ({ children, onClick }) => (
-  <div style={sidebarHeaderStyles.container}>
-    <button onClick={onClick} style={sidebarHeaderStyles.text}>
-      {children}
-    </button>
-  </div>
-);
-SidebarHeader.propTypes = {
-  children: PropTypes.node,
-  onClick: PropTypes.func,
-};
-
-const SidebarButton = ({ children, onClick }) => (
-  <div style={sidebarTextStyles.container}>
-    <button onClick={onClick} style={sidebarTextStyles.button}>
-      {children}
-    </button>
-  </div>
-);
-SidebarButton.propTypes = {
-  children: PropTypes.node,
-  onClick: PropTypes.func,
-};
-
-const SidebarText = ({ children }) => (
-  <div style={sidebarTextStyles.container}>
-    <p style={sidebarTextStyles.text}>
-      {children}
-    </p>
-  </div>
-);
-SidebarText.propTypes = {
-  children: PropTypes.node,
-};
-
 class MainWrapper extends React.Component {
   constructor(props) {
     super(props);
@@ -184,31 +149,6 @@ class MainWrapper extends React.Component {
   }
 
   render() {
-    // Render container list
-    const containers = this.state.containers.map(c => (
-      <SidebarButton
-        onClick={() => { this.setState({ viewContainer: c }); }}
-        key={c}>
-        <code>{c}</code>
-      </SidebarButton>
-    ));
-
-    // Report repository status
-    const buildMessage = this.state.repoBuilding
-      ? <SidebarText>Build in progress</SidebarText>
-      : null;
-    const repoState = this.state.repoCommitHash
-      ? (
-        <div>
-          <SidebarText>Type: <code>{this.state.repoBuildType}</code></SidebarText>
-          <SidebarText>Branch: <code>{this.state.repoBranch}</code></SidebarText>
-          <SidebarText>Commit: <code>{this.state.repoCommitHash.substr(1, 8)}</code>
-            <br />&quot;{this.state.repoCommitMessage}&quot;
-          </SidebarText>
-        </div>
-      )
-      : null;
-
     return (
       <div style={styles.container}>
 
@@ -235,19 +175,6 @@ class MainWrapper extends React.Component {
         </header>
 
         <div style={styles.innerContainer}>
-
-          <div style={styles.sidebar}>
-            <SidebarHeader onClick={() => { this.setState({ viewContainer: '' }); }}>
-              Daemon
-            </SidebarHeader>
-            <SidebarText><code>{this.state.remoteVersion}</code></SidebarText>
-            <SidebarHeader>Repository Status</SidebarHeader>
-            {buildMessage}
-            {repoState}
-            <SidebarHeader>Active Containers</SidebarHeader>
-            {containers}
-          </div>
-
           <div style={styles.main}>
             <Switch>
               <Route

@@ -3,13 +3,21 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import InertiaAPI from '../../common/API';
-import LogView from '../../components/LogView';
 import * as dashboardActions from '../../actions/dashboard';
+import TerminalView from '../../components/TerminalView/TerminalView';
+import {
+  Table,
+  TableCell,
+  TableRow,
+  TableHeader,
+  TableBody,
+  TableRowExpandable,
+} from '../../components/Table/Table';
 
 const styles = {
   container: {
     display: 'flex',
+    flexFlow: 'column',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
@@ -21,13 +29,6 @@ const styles = {
     color: '#9f9f9f',
   },
 };
-
-function promiseState(p) {
-  const t = {};
-
-  return Promise.race([p, t])
-    .then(v => (v === t ? 'pending' : ('fulfilled', () => 'rejected')));
-}
 
 class DashboardWrapper extends React.Component {
   constructor(props) {
@@ -41,13 +42,14 @@ class DashboardWrapper extends React.Component {
     this.getMessage = this.getMessage.bind(this);
   }
 
-  componentDidMount() {
-    this.getLogs();
+  componentWillMount() {
+    this.props.handleGetProjectDetails();
+    this.props.handleGetContainers();
+    this.props.handleGetLogs({ container: this.props.container });
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.container !== this.props.container) {
-      this.getLogs();
     }
   }
 
@@ -58,53 +60,6 @@ class DashboardWrapper extends React.Component {
       logEntries: [],
       logReader: null,
     });
-    try {
-      let resp;
-      if (!this.props.container) {
-        resp = await InertiaAPI.getContainerLogs();
-      } else {
-        resp = await InertiaAPI.getContainerLogs(this.props.container);
-      }
-      if (resp.status !== 200) {
-        this.setState({
-          errored: true,
-          logEntries: [],
-        });
-      }
-
-      const reader = resp.body.getReader();
-      this.setState({ logReader: reader });
-
-      const decoder = new TextDecoder('utf-8');
-      let buffer = '';
-      const stream = () => promiseState(reader.closed)
-        .then((s) => {
-          if (s === 'pending') {
-            return reader.read()
-              .then((data) => {
-                const chunk = decoder.decode(data.value);
-                const parts = chunk.split('\n')
-                  .filter(c => c);
-
-                parts[0] = buffer + parts[0];
-                buffer = '';
-                if (!chunk.endsWith('\n')) {
-                  buffer = parts.pop();
-                }
-
-                this.setState({
-                  logEntries: this.state.logEntries.concat(parts),
-                });
-
-                return stream();
-              });
-          }
-          return null;
-        });
-      stream();
-    } catch (e) {
-      // TODO: Log error message
-    }
   }
 
   getMessage() {
@@ -117,21 +72,100 @@ class DashboardWrapper extends React.Component {
   }
 
   render() {
+    const {
+      name,
+      branch,
+      commit,
+      message,
+      buildType,
+    } = this.props.project;
+
     return (
       <div style={styles.container}>
-        {this.getMessage()}
-        <LogView logs={this.state.logEntries} />
+        <Table style={{ width: '90%', margin: '1rem' }}>
+          <TableHeader>
+            <TableRow>
+              <TableCell>{name}</TableCell>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            <TableRow>
+              <TableCell>Branch</TableCell>
+              <TableCell>{branch}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Commit</TableCell>
+              <TableCell>{commit}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Message</TableCell>
+              <TableCell>{message}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Build Type</TableCell>
+              <TableCell>{buildType}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+
+        <Table style={{ width: '90%', margin: '1rem' }}>
+          <TableHeader>
+            <TableRow>
+              <TableCell>Type/Name</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Last Updated</TableCell>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {/* TODO: a foreach here */}
+            <TableRowExpandable
+              height={300}
+              panel={<TerminalView logs={this.props.logs} />}>
+              <TableCell>Commit</TableCell>
+              <TableCell>{commit}</TableCell>
+            </TableRowExpandable>
+
+            <TableRow>
+              <TableCell>Message</TableCell>
+              <TableCell>{message}</TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Build Type</TableCell>
+              <TableCell>{buildType}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+
       </div>
     );
   }
 }
 DashboardWrapper.propTypes = {
+  logs: PropTypes.array,
   container: PropTypes.string,
+  project: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    branch: PropTypes.string.isRequired,
+    commit: PropTypes.string.isRequired,
+    message: PropTypes.string.isRequired,
+    buildType: PropTypes.string.isRequired,
+  }),
+  handleGetLogs: PropTypes.func,
+  handleGetContainers: PropTypes.func,
+  handleGetProjectDetails: PropTypes.func,
 };
 
 const mapStateToProps = ({ Dashboard }) => {
   return {
-    testState: Dashboard.testState,
+    project: Dashboard.project,
+    logs: Dashboard.logs,
+    containers: Dashboard.containers,
   };
 };
 
