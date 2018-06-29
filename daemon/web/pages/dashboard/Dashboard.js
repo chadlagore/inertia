@@ -18,7 +18,7 @@ const styles = {
   container: {
     display: 'flex',
     flexFlow: 'column',
-    height: '100%',
+    height: 'min-content',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -31,44 +31,9 @@ const styles = {
 };
 
 class DashboardWrapper extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      errored: false,
-      logEntries: [],
-      logReader: null,
-    };
-    this.getLogs = this.getLogs.bind(this);
-    this.getMessage = this.getMessage.bind(this);
-  }
-
   componentWillMount() {
     this.props.handleGetProjectDetails();
     this.props.handleGetContainers();
-    this.props.handleGetLogs({ container: this.props.container });
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.container !== this.props.container) {
-    }
-  }
-
-  async getLogs() {
-    if (this.state.logReader) await this.state.logReader.cancel();
-    this.setState({
-      errored: false,
-      logEntries: [],
-      logReader: null,
-    });
-  }
-
-  getMessage() {
-    if (this.state.errored) {
-      return <p style={styles.underConstruction}>Yikes, something went wrong</p>;
-    } else if (this.state.logEntries.length === 0) {
-      return <p style={styles.underConstruction}>No logs to show</p>;
-    }
-    return null;
   }
 
   render() {
@@ -79,6 +44,11 @@ class DashboardWrapper extends React.Component {
       message,
       buildType,
     } = this.props.project;
+    const {
+      containers,
+      handleGetLogs,
+      logs,
+    } = this.props;
 
     return (
       <div style={styles.container}>
@@ -115,30 +85,25 @@ class DashboardWrapper extends React.Component {
         <Table style={{ width: '90%', margin: '1rem' }}>
           <TableHeader>
             <TableRow>
-              <TableCell>Type/Name</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell style={{ flex: '0 0 30%' }}>Type/Name</TableCell>
+              <TableCell style={{ flex: '0 0 20%' }}>Status</TableCell>
               <TableCell>Last Updated</TableCell>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {/* TODO: a foreach here */}
-            <TableRowExpandable
-              height={300}
-              panel={<TerminalView logs={this.props.logs} />}>
-              <TableCell>Commit</TableCell>
-              <TableCell>{commit}</TableCell>
-            </TableRowExpandable>
-
-            <TableRow>
-              <TableCell>Message</TableCell>
-              <TableCell>{message}</TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell>Build Type</TableCell>
-              <TableCell>{buildType}</TableCell>
-            </TableRow>
+            { containers.map(container => (
+              <TableRowExpandable
+                key={container.name}
+                height={300}
+                onClick={() => handleGetLogs({ container: container.name })}
+                panel={<TerminalView logs={logs} />}>
+                <TableCell style={{ flex: '0 0 30%' }}>Commit</TableCell>
+                <TableCell style={{ flex: '0 0 20%' }} />
+                <TableCell>{commit}</TableCell>
+              </TableRowExpandable>
+              ))
+            }
           </TableBody>
         </Table>
 
@@ -148,7 +113,11 @@ class DashboardWrapper extends React.Component {
 }
 DashboardWrapper.propTypes = {
   logs: PropTypes.array,
-  container: PropTypes.string,
+  containers: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    lastUpdated: PropTypes.string.isRequired,
+  })),
   project: PropTypes.shape({
     name: PropTypes.string.isRequired,
     branch: PropTypes.string.isRequired,

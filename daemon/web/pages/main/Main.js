@@ -39,81 +39,16 @@ const styles = {
     borderBottom: '1px solid #c1c1c1',
   },
 
-  sidebar: {
-    display: 'flex',
-    flexFlow: 'column',
-    width: '20rem',
-    height: '100%',
-    paddingTop: '0.5rem',
-    borderRight: '1px solid #c1c1c1',
-    backgroundColor: '#f0f0f0',
-  },
-
   main: {
     height: '100%',
     width: '100%',
     overflowY: 'scroll',
-  },
-
-  button: {
-    flex: 'none',
-  },
-};
-
-const sidebarHeaderStyles = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '3rem',
-    width: '100%',
-    paddingLeft: '1.5rem',
-    paddingTop: '1rem',
-  },
-
-  text: {
-    textDecoration: 'none',
-    color: '#5f5f5f',
-  },
-};
-
-const sidebarTextStyles = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    height: 'flex',
-    width: '100%',
-    paddingLeft: '2rem',
-    paddingTop: '0.5rem',
-  },
-
-  text: {
-    fontSize: '80%',
-    textDecoration: 'none',
-    color: '#101010',
-  },
-
-  button: {
-    fontSize: '80%',
-    textDecoration: 'none',
-    color: '#101010',
   },
 };
 
 class MainWrapper extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      remoteVersion: '',
-
-      repoBranch: '',
-      repoCommitHash: '',
-      repoCommitMessage: '',
-      repoBuildType: '',
-      repoBuilding: false,
-      containers: [],
-
-      viewContainer: '',
-    };
 
     this.handleLogout = this.handleLogout.bind(this);
     this.handleGetStatus = this.handleGetStatus.bind(this);
@@ -135,16 +70,6 @@ class MainWrapper extends React.Component {
   async handleGetStatus() {
     const response = await InertiaAPI.getRemoteStatus();
     if (response.status !== 200) return new Error('bad response: ' + response);
-    const status = await response.json();
-    this.setState({
-      remoteVersion: status.version,
-      repoBranch: status.branch,
-      repoBuilding: status.build_active,
-      repoBuildType: status.build_type,
-      repoCommitHash: status.commit_hash,
-      repoCommitMessage: status.commit_message,
-      containers: status.containers,
-    });
     return null;
   }
 
@@ -180,7 +105,7 @@ class MainWrapper extends React.Component {
               <Route
                 exact
                 path={`${this.props.match.url}/dashboard`}
-                component={() => <Dashboard container={this.state.viewContainer} />}
+                component={() => <Dashboard />}
               />
               <Route
                 exact

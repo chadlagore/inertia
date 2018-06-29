@@ -1,11 +1,8 @@
-// import InertiaAPI from '../common/API';
 import {
   GET_PROJECT_DETAILS_SUCCESS,
-  // GET_PROJECT_DETAILS_FAILURE,
   GET_PROJECT_LOGS_SUCCESS,
   GET_PROJECT_LOGS_FAILURE,
   GET_CONTAINERS_SUCCESS,
-  GET_CONTAINERS_FAILURE,
 } from './_constants';
 
 const MOCK_DETAILS = {
@@ -65,14 +62,10 @@ export const handleGetLogs = ({ container }) => (dispatch) => {
       // resp = InertiaAPI.getContainerLogs(container);
     }
     if (resp.status !== 200) {
-      // this.setState({
-      //   errored: true,
-      //   logEntries: [],
-      // });
+      // TODO: error dispatch here
     }
 
     const reader = resp.body.getReader();
-    // this.setState({ logReader: reader });
     const decoder = new TextDecoder('utf-8');
     let buffer = '';
     const stream = () => promiseState(reader.closed)
@@ -90,30 +83,29 @@ export const handleGetLogs = ({ container }) => (dispatch) => {
                 buffer = parts.pop();
               }
 
+              // TODO: concatenate logs and add to dispatch
               dispatch({
                 type: GET_PROJECT_LOGS_SUCCESS,
                 payload: { logs: MOCK_LOGS },
               });
-              // this.setState({
-              //   logEntries: this.state.logEntries.concat(parts),
-              // });
 
               return stream();
             });
         }
         return null;
       })
-      .catch((err) => {
+      .catch(() => {
         dispatch({
+          // TODO: change to failure AC
           type: GET_PROJECT_LOGS_SUCCESS,
-          payload: { logs: MOCK_LOGS }});
+          payload: { logs: MOCK_LOGS } });
       });
 
     stream();
   } catch (e) {
     dispatch({
       type: GET_PROJECT_LOGS_FAILURE,
-      payload: { logs: MOCK_LOGS }});
+      payload: { logs: MOCK_LOGS } });
   }
 };
 
