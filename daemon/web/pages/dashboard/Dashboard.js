@@ -7,19 +7,19 @@ import * as dashboardActions from '../../actions/dashboard';
 import TerminalView from '../../components/TerminalView/TerminalView';
 import {
   Table,
-  TableCell,
-  TableRow,
-  TableHeader,
   TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
   TableRowExpandable,
 } from '../../components/Table/Table';
+import IconHeader from '../../components/IconHeader/IconHeader';
 
 const styles = {
   container: {
     display: 'flex',
     flexFlow: 'column',
     height: 'min-content',
-    alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
@@ -52,7 +52,9 @@ class DashboardWrapper extends React.Component {
 
     return (
       <div style={styles.container}>
-        <Table style={{ width: '90%', margin: '1rem' }}>
+        <IconHeader title={branch} type="dashboard" />
+
+        <Table style={{ margin: '0 30px 10px 30px' }}>
           <TableHeader>
             <TableRow>
               <TableCell>{name}</TableCell>
@@ -82,7 +84,7 @@ class DashboardWrapper extends React.Component {
           </TableBody>
         </Table>
 
-        <Table style={{ width: '90%', margin: '1rem' }}>
+        <Table style={{ margin: '0 30px' }}>
           <TableHeader>
             <TableRow>
               <TableCell style={{ flex: '0 0 30%' }}>Type/Name</TableCell>
