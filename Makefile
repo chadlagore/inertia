@@ -48,7 +48,7 @@ clean:
 # Run static analysis
 .PHONY: lint
 lint:
-	PATH=$(PATH):./bin bash -c './bin/gometalinter --vendor --deadline=60s ./...'
+	PATH=$(PATH):./bin bash -c './bin/gometalinter --vendor --deadline=120s ./...'
 	(cd ./daemon/web; npm run lint)
 
 # Run test suite without Docker ops
@@ -65,7 +65,6 @@ test-v:
 # Also attempts to run linter
 .PHONY: test-all
 test-all:
-	make lint
 	make testenv VPS_OS=$(VPS_OS) VPS_VERSION=$(VPS_VERSION)
 	make testdaemon
 	go test ./... -ldflags "-X main.Version=test" --cover
